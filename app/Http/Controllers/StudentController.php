@@ -13,6 +13,8 @@ use App\admin;
 use App\team_contents;
 use App\student_classes;
 use App\student_preferences;
+use App\student_competition;
+use App\competition;
 
 class StudentController extends Controller
 {
@@ -31,22 +33,75 @@ class StudentController extends Controller
         return view('auth\login');
     }
 
-    public function divideTeam($team, $min, $max){
-        //return "Apple";
-        // return $team;
+    public function divideTeam($team, $min, $max, $boolit, $compID)
+    {
         $len = count($team);
-        $numTeam = $len/$min;
+        $numTeam = $len / $min;
         $totalTeam = array();
-        $team = array_flip($team);
-        while(count($team) > 0){
+        //$team = array_flip($team);
+        //return $team;
+        if ($boolit)
+        {
+            $a = array_keys($team);
+        }else{
+            $a = $team;
+        }
+        //print_r($a);
+        while(count($a) >= $min){
             $t = array();
             while(count($t) < $min){
-                array_push($t, array_pop($team));
-                array_push($t, array_shift($team));
+                array_push($t, array_pop($a));
+                $a = array_reverse($a);
             }
-            array_push($totalTeam, $t );
+                array_push($totalTeam, $t);
         }
-        return $totalTeam;
+
+        if( count($a) > 0 && count($totalTeam) > 0 ) {
+            $i = 0;
+            foreach ($a as $b) {
+                array_push($totalTeam[$i % count($totalTeam)], $b);
+                $i = $i + 1;
+            }
+        }
+
+        $unsorted = array();
+        $teamteam = array();
+        //return $totalTeam;
+
+        foreach ($totalTeam as $c) {
+            if( count($c) > $max) {
+                while (count($c) > $max) {
+                    print_r($c);
+                    array_push($unsorted, array_pop($c));
+                }
+                array_push($teamteam, $c);
+            }else {
+                array_push($teamteam, $c);
+            }
+        }
+
+        if (count($teamteam)  > 0 )
+        {
+            foreach($teamteam as $t) {
+                team::create(['competition' => $compID,'teamName' => 'Unnamed Team']);
+                $val = \DB::select(\DB::raw('(SELECT max(teamID) as i FROM team)'));
+                $teamID= $val[0]->i;
+                foreach($t as $s) {
+                    //print_r($s);
+                    //print_r(',');
+                    team_contents::create(['teamID' => $teamID,'studentID' => $s]);
+                    \DB::table('student_competition')->where('studentID' , '=', $s)->delete();
+                }
+            }
+        }
+
+
+        if (count($totalTeam == 0))
+        {
+            return $a;
+        }
+
+        return $unsorted;
 
     }
 
@@ -55,7 +110,15 @@ class StudentController extends Controller
         //DB::table('team_contents')->truncate();
         $min = $request->get('min');
         $max = $request->get('max');
-        $students_p = student_preferences::all();
+        $compId = $request->get('comp');
+        $students_p = \DB::table('student_competition')
+            ->join('student_preferences', 'student_competition.studentID' , '=' , 'student_preferences.id')
+            ->select('student_competition.studentID', 'student_preferences.python', 'student_preferences.java', 'student_preferences.c', 'student_preferences.teamStyle')
+            ->where('student_competition.compID', '=',$compId )
+            ->get();
+
+
+
         $students_c = student_classes::all();
         $std_j = array();
         $std_p = array();
@@ -64,29 +127,29 @@ class StudentController extends Controller
 
         foreach ( $students_p as $a) {
             if( $a->java > $a->python and $a->java > $a->c) {
-                $std_j[$a->id] = $a->java;
+                $std_j[$a->studentID] = $a->java;
             }
             elseif ( $a->python > $a->c and $a->python > $a-> c) {
-                $std_p[$a->id] = $a->python;
+                $std_p[$a->studentID] = $a->python;
             }
             elseif ( $a->c > $a->python and $a->c > $a->java) {
-                $std_c[$a->id] = $a->c;
+                $std_c[$a->studentID] = $a->c;
             }else {
-                $std_u[$a->id] = $a->c;
+                $std_u[$a->studentID] = $a->c;
             }
         }
         foreach( $students_c as $c){
-            if (array_key_exists($c->id, $std_j)) {
-                $std_j[$c->id] = $std_j[$c->id] + $c->classID;
+            if (array_key_exists($c->studentID, $std_j)) {
+                $std_j[$c->studentID] = $std_j[$c->studentID] + $c->classID;
             }
-            if (array_key_exists($c->id, $std_p)) {
-                $std_p[$c->id] = $std_p[$c->id] + $c->classID;
+            if (array_key_exists($c->studentID, $std_p)) {
+                $std_p[$c->studentID] = $std_p[$c->studentID] + $c->classID;
             }
-            if (array_key_exists($c->id, $std_c)) {
-                $std_c[$c->id] = $std_c[$c->id] + $c->classID;
+            if (array_key_exists($c->studentID, $std_c)) {
+                $std_c[$c->studentID] = $std_c[$c->studentID] + $c->classID;
             }
-            if (array_key_exists($c->id, $std_u)) {
-                $std_u[$c->id] = $std_u[$c->id] + $c->classID;
+            if (array_key_exists($c->studentID, $std_u)) {
+                $std_u[$c->studentID] = $std_u[$c->studentID] + $c->classID;
             }
         }
 
@@ -94,13 +157,21 @@ class StudentController extends Controller
         asort($std_c);
         asort($std_p);
         asort($std_u);
+        $unsorted = array();
+        //return $this->divideTeam($std_j, $min, $max);
+        //return count($std_p) + count($std_c) + count($std_p) + count($std_u);
+        // return $unsorted + $this->divideTeam($std_u, $min, $max, true, $compId);
+        $unsorted = $unsorted + $this->divideTeam($std_j, $min, $max, true, $compId);
+        //print_r($unsorted);
+        $unsorted = $unsorted + $this->divideTeam($std_c, $min, $max, true, $compId);
+        //print_r($unsorted);
+        $unsorted = $unsorted + $this->divideTeam($std_p, $min, $max, true, $compId);
+        //print_r($unsorted);
+        $unsorted = $unsorted + $this->divideTeam($std_u, $min, $max, true, $compId);
 
-        return $this->divideTeam($std_u, $min, $max);
-        if( count($std_j) > $max){
+        //print_r($unsorted);
 
-        }elseif( count($std_j) < $max and count($std_j) > $min) {
-
-        }
+        return $this->divideTeam($unsorted, $min, $max, false, $compId);
 
         return $std_u;
     }
@@ -132,12 +203,18 @@ class StudentController extends Controller
 
         if(count($admin_id)) {
             $teams = team::all();
+            $competitions = competition::all();
+            $compID = array();
+            $compName = array();
             $teamnames = array();
+            foreach( $competitions as $c) {
+                array_push($compID, $c->compID);
+                array_push($compName, $c->compName);
+            }
             foreach( $teams as $t) {
                 array_push($teamnames, $t->teamName);
             }
-
-            return view('admin',compact('teamnames'));
+            return view('admin',compact('teamnames', 'compID', 'compName'));
         } else {
             //return $pref[0]->python;
             // return $user->id;

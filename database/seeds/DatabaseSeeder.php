@@ -10,6 +10,7 @@ use App\student_preferences;
 use App\team;
 use App\team_contents;
 use App\User;
+use App\student_competition;
 
 class DatabaseSeeder extends Seeder
 {
@@ -30,6 +31,7 @@ class DatabaseSeeder extends Seeder
         $this->call(student_preferencesTableSeeder::class);
         $this->call(teamTableSeeder::class);
         $this->call(team_contentsTableSeeder::class);
+        $this->call(student_competitionTableSeeder::class);
 
         Model::reguard();
     }
@@ -113,9 +115,9 @@ class competitionTableSeeder extends Seeder
     {
         DB::table('competition')->delete();
 
-        competition::create(['compName' => 'Coding is fun!','maxTeamSize' => '5']);
-        competition::create(['compName' => 'Coding isn\'t fun!','maxTeamSize' => '3']);
-        competition::create(['compName' => 'Coding is meh...','maxTeamSize' => '4']);
+        competition::create(['compName' => 'Coding is fun!']);
+        competition::create(['compName' => 'Coding isn\'t fun!']);
+        competition::create(['compName' => 'Coding is meh...']);
 
 
     }
@@ -322,4 +324,44 @@ class team_contentsTableSeeder extends Seeder
         team_contents::create(['teamID' => '6','studentID' => '21']);
     }
 
+}
+
+class student_competitionTableSeeder extends Seeder
+{
+    public function run()
+    {
+        DB::table('student_competition')->delete();
+
+        student_competition::create(['studentID' => '1','compID' => '1']);
+        student_competition::create(['studentID' => '2','compID' => '1']);
+        student_competition::create(['studentID' => '3','compID' => '1']);
+        student_competition::create(['studentID' => '4','compID' => '1']);
+        student_competition::create(['studentID' => '5','compID' => '1']);
+        student_competition::create(['studentID' => '6','compID' => '1']);
+        student_competition::create(['studentID' => '7','compID' => '1']);
+        student_competition::create(['studentID' => '8','compID' => '1']);
+        student_competition::create(['studentID' => '9','compID' => '1']);
+        student_competition::create(['studentID' => '10','compID' => '1']);
+        student_competition::create(['studentID' => '11','compID' => '1']);
+        student_competition::create(['studentID' => '12','compID' => '1']);
+        student_competition::create(['studentID' => '13','compID' => '1']);
+        student_competition::create(['studentID' => '14','compID' => '1']);
+        student_competition::create(['studentID' => '15','compID' => '1']);
+
+        student_competition::create(['studentID' => '1','compID' => '2']);
+        student_competition::create(['studentID' => '2','compID' => '2']);
+        student_competition::create(['studentID' => '3','compID' => '2']);
+        student_competition::create(['studentID' => '4','compID' => '2']);
+        student_competition::create(['studentID' => '5','compID' => '2']);
+        student_competition::create(['studentID' => '16','compID' => '2']);
+        student_competition::create(['studentID' => '17','compID' => '2']);
+        student_competition::create(['studentID' => '18','compID' => '2']);
+        student_competition::create(['studentID' => '19','compID' => '2']);
+        student_competition::create(['studentID' => '20','compID' => '2']);
+        student_competition::create(['studentID' => '21','compID' => '2']);
+        student_competition::create(['studentID' => '22','compID' => '2']);
+        student_competition::create(['studentID' => '23','compID' => '2']);
+        student_competition::create(['studentID' => '24','compID' => '2']);
+        student_competition::create(['studentID' => '25','compID' => '2']);
+    }
 }

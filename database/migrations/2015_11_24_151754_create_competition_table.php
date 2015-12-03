@@ -16,7 +16,6 @@ class CreateCompetitionTable extends Migration
         Schema::create('competition', function (Blueprint $table) {
             $table->increments('compID');
             $table->string('compName');
-            $table->integer('maxTeamSize');
 
         });
     }

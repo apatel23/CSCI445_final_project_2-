@@ -8,6 +8,6 @@ class competition extends Model
 {
     protected $table = 'competition';
 
-    protected $fillable = ['compID','compName','maxTeamSize'];
+    protected $fillable = ['compID','compName'];
     public $timestamps = false;
 }

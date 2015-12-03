@@ -66,10 +66,17 @@
             </table>
         </div>
         {!!   Form::open(array('url' => 'generate')) !!}
-            {!! Form::label('min', 'Minimum number of teams: ') !!}
+            {!! Form::label('min', 'Minimum number of students per team: ') !!}
             {!! Form::text('min', null, ['class' => 'form-control']) !!}
-            {!! Form::label('max', 'Maximum number of teams: ') !!}
+            {!! Form::label('max', 'Maximum number of students per team: ') !!}
             {!! Form::text('max', null, ['class' => 'form-control']) !!}
+            {!! Form::label('comp','Select a competition: ') !!} <br>
+        @for ($i = 0; $i < count($compName); $i++)
+            {!! Form::radio('comp',$compID[$i]) !!}
+            {!! Form::label('compName',$compName[$i]) !!}
+            <br>
+        @endfor
+
             {!! Form::submit('Update',['class' => 'form-control']) !!}
         {!! Form::close() !!}
 
